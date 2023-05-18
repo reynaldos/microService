@@ -3,12 +3,10 @@ export type Auction ={
   title: string,
   status: string,
   createdAt: string,
+  endingAt: string
   highestBid: Bid
 }
 
-export type AuctionRequest ={
-  title: string
-}
 
 export type Bid = {
   amount: number,

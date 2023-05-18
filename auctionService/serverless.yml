@@ -32,6 +32,7 @@ provider:
             - dynamodb:DeleteItem
           #can  use Amazon Resource name(ARN) for specific table
           Resource: '*' 
+            # !Join ['/,', ['${self:custom.AuctionsTable.arn}','index','statusAndEndDate']]
             # - ${self:custom.AuctionsTable.arn}
             # - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AcountId}:table/AuctionsTable 
 
@@ -47,10 +48,22 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+          - AttributeName: endingAt
+            AttributeType: S 
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-
+        GlobalSecondaryIndexes:
+          - IndexName: statusAndEndDate
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: endingAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
 # list of lambda functions
 # contains where to find handler, method, and path
@@ -82,6 +95,11 @@ functions:
       - httpApi:
           method: PATCH
           path: /auction/{id}/bid
+
+  processAuctions:
+    handler: src/handlers/processAuctions.handler
+    # events:
+    #   - schedule: rate(1 minute)
 
 plugins:
   - serverless-offline

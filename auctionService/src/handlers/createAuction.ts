@@ -5,7 +5,7 @@ import { marshall } from '@aws-sdk/util-dynamodb';
 
 // import Middleware from "../util/Middleware";
 import {BuildApiGatewayResponseJSON} from "../util/ApiResponseBuilder";
-import {AuctionRequest, Auction} from "../types/Auction";
+import { Auction } from "../types/Auction";
 // import { TABLES } from "../constants/Tables";
 import { REGION } from "../constants/Environments";
 
@@ -15,13 +15,21 @@ const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 // definition for lambda function
 async function createAuction(event: APIGatewayProxyEventV2) {
 
-  const request: AuctionRequest  = JSON.parse(event.body || '');
+  const request: {title: string}  = JSON.parse(event.body || '');
+
+  // end date config
+  const bidOpenDuration: number = 1; // in hrs
+  
+  const now = new Date();
+  const endDate = new Date() ;
+  endDate.setHours(now.getHours() + bidOpenDuration);
 
   const newAuction: Auction  = {
     id: uuid(),
     title: request.title,
     status: 'OPEN',
-    createdAt: new Date().toISOString(),
+    createdAt: now.toISOString(),
+    endingAt: endDate.toISOString(),
     highestBid: {
       amount:0
     }
