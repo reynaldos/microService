@@ -17,7 +17,7 @@ async function getAuctions(event: APIGatewayProxyEventV2) {
 
   const { id } = event.pathParameters;
 
-  let auction: Auction | {};
+  let auctions: Object[];
   try {
 
     const queryCommand = new QueryCommand({
@@ -29,14 +29,18 @@ async function getAuctions(event: APIGatewayProxyEventV2) {
       }}});
 
 		const response = await dynamodb.send(queryCommand);
-    auction = defaultTo(response.Items[0], {});
+    auctions = defaultTo(response.Items, []).map((item) => unmarshall(item));
 
   } catch (error) {
     console.log(error);
-    throw new Error(`Auction with ID "${id}" not found!`);
+    throw new Error(error);
   }
   
-  return BuildApiGatewayResponseJSON(200, auction);
+  if (auctions.length < 1 ){
+     throw new Error(`Auction with ID "${id}" not found!`);
+  } 
+ 
+  return BuildApiGatewayResponseJSON(200, auctions[0]);
 };
 	
 // exported as handler
