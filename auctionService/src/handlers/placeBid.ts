@@ -2,6 +2,7 @@ import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { DynamoDBClient, UpdateItemCommand, } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
+import { getAuctionById } from "./getAuction";
 // import Middleware from "../util/Middleware";
 import {BuildApiGatewayResponseJSON} from "../util/ApiResponseBuilder";
 // import { TABLES } from "../constants/Tables";
@@ -15,6 +16,12 @@ async function placeBid(event: APIGatewayProxyEventV2) {
 
   const { id } = event.pathParameters;
   const { amount } = JSON.parse(event.body);
+
+  // check if new bid is higher
+  const auction = await getAuctionById(id);
+  if (amount < auction.highestBid.amount){
+    throw new Error(`Your bid must be higher than ${auction.highestBid.amount}!`);
+  }
 
   let updatedAuction: Object;
   try {
