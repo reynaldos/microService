@@ -12,10 +12,8 @@ import { REGION } from "../constants/Environments";
 // allows acces to db functions
 const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 
-// definition for lambda function
-async function getAuctions(event: APIGatewayProxyEventV2) {
 
-  const { id } = event.pathParameters;
+export async function getAuctionById(id: string) : Promise<any> {
 
   let auctions: Object[];
   try {
@@ -24,9 +22,9 @@ async function getAuctions(event: APIGatewayProxyEventV2) {
         TableName: "AuctionsTable-dev", 
         KeyConditionExpression: "id = :id",
         ExpressionAttributeValues: {
-          ":id": {
-              "S": id
-      }}});
+          ":id": {S: id }
+        }
+      });
 
 		const response = await dynamodb.send(queryCommand);
     auctions = defaultTo(response.Items, []).map((item) => unmarshall(item));
@@ -36,15 +34,29 @@ async function getAuctions(event: APIGatewayProxyEventV2) {
     throw new Error(error);
   }
   
+  // return error if not found
   if (auctions.length < 1 ){
-     throw new Error(`Auction with ID "${id}" not found!`);
+    console.log(`Auction with ID "${id}" not found!`);
+    throw new Error(`Auction with ID "${id}" not found!`);
   } 
+
+  return auctions[0];
+
+}
+
+
+// definition for lambda function
+async function getAuction(event: APIGatewayProxyEventV2) {
+
+  const { id } = event.pathParameters;
+
+  let auction = await getAuctionById(id);
  
-  return BuildApiGatewayResponseJSON(200, auctions[0]);
+  return BuildApiGatewayResponseJSON(200, auction);
 };
 	
 // exported as handler
-export const handler = getAuctions;
+export const handler = getAuction;
 // export const handler = Middleware(getAuctions);
 
 
