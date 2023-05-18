@@ -21,7 +21,10 @@ async function createAuction(event: APIGatewayProxyEventV2) {
     id: uuid(),
     title: request.title,
     status: 'OPEN',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    highestBid: {
+      amount:0
+    }
   }
 
   const scanCommand = new PutItemCommand({
