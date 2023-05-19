@@ -12,3 +12,7 @@ export type Bid = {
   amount: number,
   user?: string
 }
+
+export type auctionStatus = 
+  | 'OPEN'
+  | 'CLOSED'

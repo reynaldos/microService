@@ -2,3 +2,6 @@ Errors:
 - environment variables are undefined when used in handlers
 - creating seperate files for table resources and IAM for severless.yml
 - middy middleware being wack
+
+Todo:
+- add validators schemaas for lambdas

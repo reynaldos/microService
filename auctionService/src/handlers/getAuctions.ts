@@ -3,7 +3,10 @@ import { DynamoDBClient, ScanCommand, QueryCommand } from '@aws-sdk/client-dynam
 import { defaultTo } from 'lodash';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
-// import Middleware from "../util/Middleware";
+// // import Middleware from "../util/Middleware";
+// import  validator  from '@middy/validator';
+// import getAuctionScheme from '../Schemas/getAuctionScheme';
+
 import {BuildApiGatewayResponseJSON} from "../util/ApiResponseBuilder";
 import {Auction} from "../types/Auction";
 // import { TABLES } from "../constants/Tables";
@@ -14,10 +17,15 @@ const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 
 // definition for lambda function
 async function getAuctions(event: APIGatewayProxyEventV2) {
-  const { status } = event.queryStringParameters;
+  let { status } = event.queryStringParameters;
 
   let auctions : Record<string, any>[];
   try {
+
+    
+    if ( ['OPEN,"CLOSE'].indexOf(status) < 0 ){
+      status = "OPEN";
+    }
 
     // get all auctions based on given status
     const queryCommand = new QueryCommand({
@@ -52,4 +60,5 @@ async function getAuctions(event: APIGatewayProxyEventV2) {
 	
 // exported as handler
 export const handler = getAuctions;
-// export const handler = Middleware(getAuctions);
+// export const handler = Middleware(getAuctions)
+// .use(validator({inputSchema: getAuctionScheme, useDefault: true}));
