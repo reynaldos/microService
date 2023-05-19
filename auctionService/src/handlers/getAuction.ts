@@ -13,9 +13,9 @@ import { REGION } from "../constants/Environments";
 const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 
 
-export async function getAuctionById(id: string) : Promise<any> {
+export async function getAuctionById(id: string) : Promise<Auction> {
 
-  let auctions: Object[];
+  let auctions: Auction[] | any[];
   try {
 
     const queryCommand = new QueryCommand({

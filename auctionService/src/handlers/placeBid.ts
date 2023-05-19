@@ -23,6 +23,11 @@ async function placeBid(event: APIGatewayProxyEventV2) {
     throw new Error(`Your bid must be higher than ${auction.highestBid.amount}!`);
   }
 
+  // check auction status
+  if (auction.status !== 'OPEN'){
+    throw new Error(`You cannot bod on closed auctions!`);
+  }
+
   let updatedAuction: Object;
   try {
     const updateCommand = new UpdateItemCommand({
