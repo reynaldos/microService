@@ -12,20 +12,36 @@ import { REGION } from "../constants/Environments";
 const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 
 // definition for lambda function
-async function placeBid(event: APIGatewayProxyEventV2) {
+async function placeBid(event: APIGatewayProxyEventV2 | any) {
 
   const { id } = event.pathParameters;
   const { amount } = JSON.parse(event.body);
 
+  // bidder email
+  const authorizer : {email : string} = event.requestContext.authorizer;
+  const bidder = authorizer.email;
+
   // check if new bid is higher
   const auction = await getAuctionById(id);
+
+  // check if seller trying to place bid
+  if (auction.seller === bidder){
+    throw new Error(`You can't bid on item your own auction!`);
+  }
+
+  // check for double bidding by highest bidder
+  if (auction.highestBid.user === bidder){
+    throw new Error(`You already have highest bid, no double bidding!`);
+  }
+
+  // check if bid is lower than highest bid
   if (amount < auction.highestBid.amount){
     throw new Error(`Your bid must be higher than ${auction.highestBid.amount}!`);
   }
 
   // check auction status
   if (auction.status !== 'OPEN'){
-    throw new Error(`You cannot bod on closed auctions!`);
+    throw new Error(`You cannot Bid on closed auctions!`);
   }
 
   let updatedAuction: Object;
@@ -35,9 +51,11 @@ async function placeBid(event: APIGatewayProxyEventV2) {
         Key: { 
           id: {S: id } 
         },
-        UpdateExpression: 'SET highestBid.amount = :amount',
+        UpdateExpression: 'SET highestBid.amount = :amount, highestBid.bidder = :bidder',
         ExpressionAttributeValues:{
           ":amount" : { N: `${amount}` },
+          ":bidder" : { S: `${bidder}` },
+
         },
         ReturnValues: 'ALL_NEW'
      });
