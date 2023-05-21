@@ -1,0 +1,5 @@
+node_modules
+.serverless
+public_key.pem
+secrets.json
+.webpack

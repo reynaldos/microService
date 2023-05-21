@@ -71,30 +71,34 @@ functions:
   createAuction:
     handler: src/handlers/createAuction.handler
     events:
-      - httpApi:
+      - http:
           method: POST
           path: /auction
+          authorizer: ${self:custom.authorizer}
 
   getAuctions:
     handler: src/handlers/getAuctions.handler
     events:
-      - httpApi:
+      - http:
           method: GET
           path: /auctions
+          authorizer: ${self:custom.authorizer}
 
   getAuction:
     handler: src/handlers/getAuction.handler
     events:
-      - httpApi:
+      - http:
           method: GET
           path: /auction/{id}
+          authorizer: ${self:custom.authorizer}
 
   placeBid:
     handler: src/handlers/placeBid.handler
     events:
-      - httpApi:
+      - http:
           method: PATCH
           path: /auction/{id}/bid
+          authorizer: ${self:custom.authorizer}
 
   processAuctions:
     handler: src/handlers/processAuctions.handler
@@ -108,6 +112,8 @@ plugins:
 
 # allow for custom values
 custom:
+  # authorizer: arn:aws:lambda:${AWS::Region}:${AWS::AcountId}:function:auth-service-${self:provider.stage}-auth
+  authorizer: arn:aws:lambda:us-east-1:041575996350:function:auth-service-dev-auth
   serverless-offline:
       httpPort: 8080
   AuctionsTable: 

@@ -4,4 +4,4 @@ Errors:
 - middy middleware being wack
 
 Todo:
-- add validators schemaas for lambdas
+- add validators schemaas for lambdas(placeBid and createAuction)
