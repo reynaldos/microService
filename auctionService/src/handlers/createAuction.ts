@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2  } from "aws-lambda";
+import { APIGatewayAuthorizerEvent, APIGatewayProxyEventV2  } from "aws-lambda";
 import {v4 as uuid} from 'uuid';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
@@ -13,9 +13,11 @@ import { REGION } from "../constants/Environments";
 const dynamodb: DynamoDBClient = new DynamoDBClient({region: REGION});
 
 // definition for lambda function
-async function createAuction(event: APIGatewayProxyEventV2) {
+async function createAuction(event: APIGatewayProxyEventV2 | any) {
 
   const request: {title: string}  = JSON.parse(event.body || '');
+
+  const authorizer : {email : string} = event.requestContext.authorizer
 
   // end date config
   const bidOpenDuration: number = 1; // in hrs
@@ -32,7 +34,8 @@ async function createAuction(event: APIGatewayProxyEventV2) {
     endingAt: endDate.toISOString(),
     highestBid: {
       amount:0
-    }
+    },
+    seller: authorizer.email
   }
 
   const scanCommand = new PutItemCommand({

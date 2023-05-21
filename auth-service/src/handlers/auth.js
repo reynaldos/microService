@@ -43,6 +43,7 @@ exports.handler = async (event, context, callback) => {
   };
 
   try {
+    
     jwt.verify(tokenValue, AUTH0_CLIENT_PUBLIC_KEY, options, (verifyError, decoded) => {
       if (verifyError) {
         console.log('verifyError', verifyError);
@@ -52,7 +53,11 @@ exports.handler = async (event, context, callback) => {
       }
       // is custom authorizer function
       console.log('valid from customAuthorizer', decoded);
-      return callback(null, generatePolicy(decoded.sub, 'Allow', event.methodArn));
+      const policy = generatePolicy(decoded.sub, 'Allow', event.methodArn);
+      return callback(null, {
+        ...policy,
+        context: decoded
+      });
     });
   } catch (err) {
     console.log('catch error. Invalid token', err);
