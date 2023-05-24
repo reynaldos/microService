@@ -1,0 +1,52 @@
+service: notification-service
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  memorySize: 256
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  versionFunctions: false
+  httpApi:
+    cors:
+      allowedOrigins: "*"
+      allowedHeaders: "*"
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - ses:RecieveMessage
+          Resource: "*"
+
+resources:
+  Resources:
+    MailQueue:
+      Type: AWS::SQS::Queue
+      Properties: 
+        QueueName: ${self:custom.mailQueue.name}
+        VisibilityTimeout: 120
+
+functions:
+  sendMail:
+    handler: src/handlers/sendMail.handler
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+              - MailQueue
+              - Arn
+
+custom:
+  mailQueue:
+    name: MailQueue-${self:provider.stage}
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
