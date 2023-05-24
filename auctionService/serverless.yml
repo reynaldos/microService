@@ -117,7 +117,8 @@ custom:
   serverless-offline:
       httpPort: 8080
   AuctionsTable: 
-    name: !Ref AuctionsTable
-    arn: !GetAtt AuctionsTable.Arn
+    name: 
+      Ref: AuctionsTable
+    arn: Fn::GetAtt [AuctionsTable, Arn]
  
   
