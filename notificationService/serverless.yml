@@ -32,6 +32,20 @@ resources:
       Properties: 
         QueueName: ${self:custom.mailQueue.name}
         VisibilityTimeout: 120
+  Outputs:
+    MailQueueArn:
+      Value: 
+        Fn::GetAtt:
+              - MailQueue
+              - Arn
+      Export:
+        Name: ${self:custom.mailQueue.name}-Arn
+    MailQueueUrl:
+      Value:
+        Ref: MailQueue    
+      Export:
+        Name: ${self:custom.mailQueue.name}-Url
+
 
 functions:
   sendMail:
@@ -46,7 +60,10 @@ functions:
 custom:
   mailQueue:
     name: MailQueue-${self:provider.stage}
+      
 
 plugins:
   - serverless-offline
   - serverless-plugin-typescript
+
+
