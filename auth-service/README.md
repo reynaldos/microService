@@ -1,9 +1,3 @@
-<p align="center">
-  <img src="https://codingly-assets.s3-eu-west-1.amazonaws.com/Codingly+Logo.png" width="200px" height="200px"/>
-  </br>
-  <a href="https://codingly.io">codingly.io</a>
-  <br/>
-</p>
 <h1 align="center">Serverless Framework Auth0 Authorizer</h1>
 <p align="center">
   <i><strong>A modern, ES6-friendly Lambda Authorizer ready for integration with Serverless Framework and Auth0.</strong></i>
@@ -21,6 +15,7 @@
 ## Getting started
 
 ### 1. Clone the repository (or generate a serverless project)
+
 ```sh
 sls create --name auth-service --template-url https://github.com/codingly-io/serverless-auth0-authorizer
 cd auth-service
@@ -55,29 +50,3 @@ You can grab a test token from Auth0. Make sure to provide your token in the hea
 ```
 "Authorization": "Bearer YOUR_TOKEN"
 ```
-
-You should be good to go!
-
-<hr/>
-
-## Bonus: Cross-stack authorization
-
-This is very useful in a microservices setup. For example, you have an Auth Service (this service) which owns anything auth/user-related, and a bunch of other services that require user authorization.
-Fear not, it is very easy to make your authorizer work anywhere else in your AWS account.
-
-When defining your Lambdas in other services, simply define the `authorizer` as well and provide the ARN of your `auth` function (can be found in the AWS Console or via `sls info`).
-
-#### Example:
-
-```yaml
-functions:
-  someFunction:
-    handler: src/handlers/someFunction.handler
-    events:
-      - http:
-          method: POST
-          path: /something
-          authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:sls-auth-service-draft-dev-auth
-```
-
-If everything was set up correctly, all incoming requests to your `someFunction` Lambda will first be authorized. You can find the JWT claims at `event.requestContext.authorizer`.
