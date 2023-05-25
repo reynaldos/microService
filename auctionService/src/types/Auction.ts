@@ -11,7 +11,7 @@ export type Auction ={
 
 export type Bid = {
   amount: number,
-  user?: string
+  bidder?: string
 }
 
 export type auctionStatus = 

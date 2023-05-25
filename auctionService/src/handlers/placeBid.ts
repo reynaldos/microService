@@ -30,7 +30,7 @@ async function placeBid(event: APIGatewayProxyEventV2 | any) {
   }
 
   // check for double bidding by highest bidder
-  if (auction.highestBid.user === bidder){
+  if (auction.highestBid.bidder === bidder){
     throw new Error(`You already have highest bid, no double bidding!`);
   }
 
