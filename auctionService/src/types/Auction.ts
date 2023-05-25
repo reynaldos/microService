@@ -5,7 +5,8 @@ export type Auction ={
   createdAt: string,
   endingAt: string
   highestBid: Bid,
-  seller: string
+  seller: string,
+  pictureUrl?: string
 }
 
 

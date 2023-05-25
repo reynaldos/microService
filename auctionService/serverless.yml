@@ -9,6 +9,8 @@ provider:
   region: us-east-1
   environment:
     AUCTIONS_TABLE : AuctionsTable-${self:provider.stage}
+    MAIL_QUEUE_URL : ${self:custom.MailQueue.url}
+    AUCTIONS_BUCKET_NAME:  ${self:custom.AuctionsBucket.name}
   versionFunctions: false
   httpApi:
     cors:
@@ -35,7 +37,17 @@ provider:
             # !Join ['/,', ['${self:custom.AuctionsTable.arn}','index','statusAndEndDate']]
             # - ${self:custom.AuctionsTable.arn}
             # - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AcountId}:table/AuctionsTable 
-
+        
+        # MailQueue
+        - Effect: Allow
+          Action: sqs:SendMessage
+          Resource: ${self:custom.MailQueue.arn}
+        # - Effect: Allow
+        #   Action: s3:PutObject
+        #   Resource: ${self:custom.AuctionsBucket.arn}
+        - Effect: Allow
+          Action: s3:*
+          Resource: '*'
 
 # DynamoDB Table Setup
 resources:
@@ -64,7 +76,27 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-
+    AuctionsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.AuctionsBucket.name}
+        LifecycleConfiguration:
+          Rules:
+            - Id: ExpirePictures
+              Status: Enabled
+              ExpirationInDays: 1
+    AuctionsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref AuctionsBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicRead
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource: arn:aws:s3:::${self:custom.AuctionsBucket.name}/*
 # list of lambda functions
 # contains where to find handler, method, and path
 functions:
@@ -100,6 +132,14 @@ functions:
           path: /auction/{id}/bid
           authorizer: ${self:custom.authorizer}
 
+  uploadAuctionPicture:
+    handler: src/handlers/uploadAuctionPicture.handler
+    events:
+      - http:
+          method: PATCH
+          path: /auction/{id}/picture
+          authorizer: ${self:custom.authorizer}
+
   processAuctions:
     handler: src/handlers/processAuctions.handler
     # events:
@@ -120,5 +160,10 @@ custom:
     name: 
       Ref: AuctionsTable
     arn: Fn::GetAtt [AuctionsTable, Arn]
- 
+  AuctionsBucket:
+    name: auctions-bucket-kjnkjfi324-${self:provider.stage}
+    arn: arn:aws:s3:::${self:custom.AuctionsBucket.name}
+  MailQueue:
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
   
